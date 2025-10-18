@@ -40,13 +40,15 @@ python reduce_image.py ruta/a/carpeta --scale 0.6
 ```
 
 Establecer un ancho máximo para todas las imágenes dentro de un directorio. La
-altura se ajustará automáticamente manteniendo la proporción:
+altura se ajustará automáticamente manteniendo la proporción y nunca se
+superará el tamaño original:
 
 ```bash
 python reduce_image.py ruta/a/carpeta --width 1280
 ```
 
-Forzar dimensiones exactas (ancho y alto) para una imagen individual:
+Indicar límites máximos de ancho y alto para una imagen individual (se evita
+ampliarla aunque se introduzcan valores mayores):
 
 ```bash
 python reduce_image.py ruta/a/imagen.jpg --width 800 --height 600
@@ -62,8 +64,8 @@ archivos que se modificaron.
 ## Interfaz gráfica (Windows, macOS y Linux)
 
 La aplicación gráfica ofrece controles intuitivos para elegir la carpeta o la
-imagen a procesar, seleccionar entre un porcentaje de reducción o dimensiones
-exactas y revisar un registro en tiempo real del proceso.
+imagen a procesar, seleccionar entre un porcentaje de reducción o límites de
+ancho/alto y revisar un registro en tiempo real del proceso.
 
 Ejecuta la interfaz con:
 
@@ -79,7 +81,7 @@ python reduce_images_gui.py
   los errores si se presentaran.
 - **Procesamiento en segundo plano** para mantener la ventana siempre
   responsive, incluso con lotes grandes de imágenes.
-- **Modo porcentaje o dimensiones exactas**, con controles habilitados según la
+- **Modo porcentaje o límites máximos**, con controles habilitados según la
   opción elegida.
 
 ## Generar un ejecutable para Windows

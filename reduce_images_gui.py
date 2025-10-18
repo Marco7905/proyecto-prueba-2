@@ -114,8 +114,10 @@ class ReduceImagesApp(ttk.Frame):
 
         subtitle = ttk.Label(
             self,
-            text="Reduce automáticamente todas las imágenes de una carpeta y sus subcarpetas,"
-            " conservando cada formato original.",
+            text=(
+                "Reduce automáticamente todas las imágenes de una carpeta y sus subcarpetas,"
+                " conservando cada formato original sin ampliar ninguna fotografía."
+            ),
             style="Subtitle.TLabel",
             anchor="w",
         )
@@ -172,7 +174,7 @@ class ReduceImagesApp(ttk.Frame):
         ).grid(row=0, column=0, sticky="w")
         ttk.Radiobutton(
             options_frame,
-            text="Establecer dimensiones exactas",
+            text="Limitar por ancho/alto",
             variable=self.mode,
             value="dimensions",
             command=self._on_mode_change,
@@ -220,6 +222,13 @@ class ReduceImagesApp(ttk.Frame):
         ).grid(row=0, column=1, sticky="w")
         self.height_entry = ttk.Entry(dims_frame, textvariable=self.height_value)
         self.height_entry.grid(row=1, column=1, sticky="ew")
+
+        ttk.Label(
+            dims_frame,
+            text="Se toman como límites máximos; nunca se agrandan las imágenes.",
+            style="Status.TLabel",
+            wraplength=360,
+        ).grid(row=2, column=0, columnspan=2, sticky="w", pady=(8, 0))
 
         action_frame = ttk.Frame(self, style="CardInner.TFrame", padding=(18, 16))
         action_frame.grid(row=4, column=0, sticky="ew", pady=(18, 0))

@@ -4,7 +4,9 @@ El módulo ofrece una utilidad de línea de comandos y funciones reutilizables
 para otros scripts. Acepta como entrada una imagen suelta o una carpeta que
 contenga más carpetas con imágenes en distintos formatos. Cada imagen se
 redimensiona manteniendo su formato original y se sobreescribe en el mismo
-lugar, dejando intactos los demás archivos.
+lugar, dejando intactos los demás archivos. Cuando se indican dimensiones
+concretas, estas se consideran límites máximos para evitar ampliar las
+imágenes más allá de su tamaño original.
 """
 
 from __future__ import annotations
@@ -56,12 +58,18 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--width",
         type=int,
-        help="Nuevo ancho en píxeles. Si sólo se indica este valor, se mantiene la proporción.",
+        help=(
+            "Ancho máximo en píxeles. Si sólo se indica este valor, se mantiene la proporción"
+            " sin ampliar imágenes más grandes."
+        ),
     )
     parser.add_argument(
         "--height",
         type=int,
-        help="Nueva altura en píxeles. Si sólo se indica este valor, se mantiene la proporción.",
+        help=(
+            "Altura máxima en píxeles. Si sólo se indica este valor, se mantiene la proporción"
+            " sin ampliar imágenes más grandes."
+        ),
     )
     parser.add_argument(
         "--scale",
@@ -86,22 +94,36 @@ def _calculate_new_size(image: Image.Image, options: ResizeOptions) -> tuple[int
     original_width, original_height = image.size
 
     if options.scale is not None:
-        width = max(1, int(original_width * options.scale))
-        height = max(1, int(original_height * options.scale))
+        width = max(1, min(original_width, int(round(original_width * options.scale))))
+        height = max(1, min(original_height, int(round(original_height * options.scale))))
         return width, height
 
-    if options.width and options.height:
-        return max(1, options.width), max(1, options.height)
+    requested_width = options.width
+    requested_height = options.height
 
-    if options.width:
-        scale = options.width / original_width
-        height = max(1, int(original_height * scale))
-        return max(1, options.width), height
+    if requested_width is not None:
+        requested_width = max(1, min(requested_width, original_width))
 
-    if options.height:
-        scale = options.height / original_height
-        width = max(1, int(original_width * scale))
-        return width, max(1, options.height)
+    if requested_height is not None:
+        requested_height = max(1, min(requested_height, original_height))
+
+    if requested_width and requested_height:
+        width_ratio = requested_width / original_width
+        height_ratio = requested_height / original_height
+        scale = min(width_ratio, height_ratio, 1)
+        width = max(1, int(round(original_width * scale)))
+        height = max(1, int(round(original_height * scale)))
+        return width, height
+
+    if requested_width:
+        scale = requested_width / original_width
+        height = max(1, min(original_height, int(round(original_height * scale))))
+        return requested_width, height
+
+    if requested_height:
+        scale = requested_height / original_height
+        width = max(1, min(original_width, int(round(original_width * scale))))
+        return width, requested_height
 
     raise ValueError("No se proporcionaron parámetros válidos para redimensionar la imagen.")
 
@@ -116,14 +138,20 @@ def _iter_image_files(target_path: Path) -> Iterator[Path]:
             yield path
 
 
-def _save_with_original_metadata(image: Image.Image, destination: Path) -> None:
+def _save_with_original_metadata(
+    resized: Image.Image, original: Image.Image, destination: Path
+) -> None:
     save_kwargs: dict[str, object] = {}
-    if "exif" in image.info:
-        save_kwargs["exif"] = image.info["exif"]
-    if "icc_profile" in image.info:
-        save_kwargs["icc_profile"] = image.info["icc_profile"]
 
-    image.save(destination, format=image.format, **save_kwargs)
+    exif = original.info.get("exif")
+    if exif:
+        save_kwargs["exif"] = exif
+
+    icc_profile = original.info.get("icc_profile")
+    if icc_profile:
+        save_kwargs["icc_profile"] = icc_profile
+
+    resized.save(destination, format=original.format, **save_kwargs)
 
 
 def reduce_image_in_place(image_path: Path, options: ResizeOptions) -> bool:
@@ -138,7 +166,7 @@ def reduce_image_in_place(image_path: Path, options: ResizeOptions) -> bool:
             return False
 
         resized = image.resize(new_size, Image.LANCZOS)
-        _save_with_original_metadata(resized, image_path)
+        _save_with_original_metadata(resized, image, image_path)
         return True
 
 
