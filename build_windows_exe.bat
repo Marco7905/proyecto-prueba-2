@@ -1,7 +1,7 @@
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
 
-rem Construye el ejecutable ReduceImagesGUI.exe con PyInstaller
+rem Construye el ejecutable "Reduccion de imagenes de Arquinnova S.L. y creado por Marco Salguero Rissiotti.exe" con PyInstaller
 pushd %~dp0
 
 if not exist "%SystemRoot%\System32\where.exe" goto nowhere
@@ -22,8 +22,9 @@ python -m pip install -r requirements.txt
 python -m pip install pyinstaller
 
 echo.
-echo Construyendo ejecutable ReduceImagesGUI.exe ...
-pyinstaller --noconsole --onefile --name ReduceImagesGUI reduce_images_gui.py
+set "APP_NAME=Reduccion de imagenes de Arquinnova S.L. y creado por Marco Salguero Rissiotti"
+echo Construyendo ejecutable %APP_NAME%.exe ...
+pyinstaller --noconsole --onefile --name "%APP_NAME%" reduce_images_gui.py
 if errorlevel 1 (
     echo.
     echo Ocurrio un error al generar el ejecutable.
@@ -31,7 +32,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo ¡Listo! Encontraras el ejecutable en dist\ReduceImagesGUI.exe
+echo ¡Listo! Encontraras el ejecutable en "dist\%APP_NAME%.exe"
 
 goto end
 

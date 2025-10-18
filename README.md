@@ -89,7 +89,8 @@ python reduce_images_gui.py
 Para crear un `.exe` que puedas distribuir o ejecutar sin abrir la terminal,
 utiliza el guion incluido `build_windows_exe.bat` desde una consola de Windows
 (PowerShell o CMD). El script instala las dependencias necesarias, ejecuta
-PyInstaller y deja el ejecutable en `dist/ReduceImagesGUI.exe`.
+PyInstaller y deja el ejecutable en
+`dist/Reduccion de imagenes de Arquinnova S.L. y creado por Marco Salguero Rissiotti.exe`.
 
 ```bat
 build_windows_exe.bat
@@ -100,7 +101,7 @@ Si prefieres hacerlo manualmente, estos son los comandos clave:
 ```bat
 python -m pip install -r requirements.txt
 python -m pip install pyinstaller
-pyinstaller --noconsole --onefile --name ReduceImagesGUI reduce_images_gui.py
+pyinstaller --noconsole --onefile --name "Reduccion de imagenes de Arquinnova S.L. y creado por Marco Salguero Rissiotti" reduce_images_gui.py
 ```
 
 Una vez finalizado, encontrarás el archivo listo para usar dentro de la carpeta

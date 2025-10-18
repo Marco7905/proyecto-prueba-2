@@ -35,7 +35,9 @@ class ReduceImagesApp(ttk.Frame):
 
     # ------------------------------------------------------------------ UI
     def _configure_styles(self) -> None:
-        self.master.title("Reductor de Imágenes")
+        self.master.title(
+            "Reducción de imágenes de Arquinnova S.L. y creado por Marco Salguero Rissiotti"
+        )
         self.master.configure(bg="#f5f7fb")
         self.master.minsize(780, 580)
 
@@ -106,7 +108,7 @@ class ReduceImagesApp(ttk.Frame):
 
         title = ttk.Label(
             self,
-            text="Reductor inteligente de imágenes",
+            text="Reducción de imágenes de Arquinnova S.L.",
             style="Title.TLabel",
             anchor="w",
         )
@@ -117,6 +119,7 @@ class ReduceImagesApp(ttk.Frame):
             text=(
                 "Reduce automáticamente todas las imágenes de una carpeta y sus subcarpetas,"
                 " conservando cada formato original sin ampliar ninguna fotografía."
+                " Creado por Marco Salguero Rissiotti."
             ),
             style="Subtitle.TLabel",
             anchor="w",
