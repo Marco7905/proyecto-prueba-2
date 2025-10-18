@@ -16,7 +16,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
 
-from PIL import Image, UnidentifiedImageError
+try:  # pragma: no cover - la importación depende del entorno
+    from PIL import Image, UnidentifiedImageError
+except ModuleNotFoundError as exc:  # pragma: no cover - entorno sin Pillow
+    Image = None  # type: ignore[assignment]
+
+    class _MissingPillowUnidentifiedImageError(RuntimeError):
+        """Marcador utilizado cuando Pillow no está disponible."""
+
+    UnidentifiedImageError = _MissingPillowUnidentifiedImageError  # type: ignore[assignment]
+    _PIL_IMPORT_ERROR = exc
+else:
+    _PIL_IMPORT_ERROR = None
 
 
 @dataclass(frozen=True)
@@ -160,6 +171,7 @@ def reduce_image_in_place(image_path: Path, options: ResizeOptions) -> bool:
     Devuelve ``True`` si la imagen fue modificada, ``False`` en caso contrario.
     """
 
+    _require_pillow()
     with Image.open(image_path) as image:
         new_size = _calculate_new_size(image, options)
         if new_size == image.size:
@@ -173,6 +185,7 @@ def reduce_image_in_place(image_path: Path, options: ResizeOptions) -> bool:
 def discover_images(target_path: Path) -> list[Path]:
     """Devuelve las rutas de las imágenes encontradas de forma recursiva."""
 
+    _require_pillow()
     images: list[Path] = []
     for candidate in _iter_image_files(target_path):
         try:
@@ -198,10 +211,24 @@ def reduce(target_path: Path, options: ResizeOptions) -> list[Path]:
     return processed
 
 
+def _require_pillow() -> None:
+    """Valida que Pillow esté disponible antes de usar la funcionalidad principal."""
+
+    if Image is None:  # pragma: no cover - sólo se ejecuta sin Pillow instalado
+        message = (
+            "La funcionalidad de reducción de imágenes requiere la librería Pillow. "
+            "Instálala ejecutando 'pip install Pillow' e inténtalo de nuevo."
+        )
+        raise ModuleNotFoundError(message) from _PIL_IMPORT_ERROR
+
+
 def main() -> None:
-    args = _parse_args()
-    options = ResizeOptions(scale=args.scale, width=args.width, height=args.height)
-    processed = reduce(args.target_path, options)
+    try:
+        args = _parse_args()
+        options = ResizeOptions(scale=args.scale, width=args.width, height=args.height)
+        processed = reduce(args.target_path, options)
+    except ModuleNotFoundError as exc:  # pragma: no cover - comportamiento en CLI
+        raise SystemExit(str(exc)) from exc
 
     if processed:
         print("Se redimensionaron los siguientes archivos:")
